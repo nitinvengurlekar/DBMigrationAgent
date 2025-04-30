@@ -1,0 +1,25 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Environment and config
+.env
+.venv/
+venv/
+env/
+pip-log.txt
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# VSCode settings (optional)
+.vscode/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
