@@ -46,7 +46,7 @@ if submitted:
 
         Each section should be thorough and professional.
         """
-        llm = ChatOpenAI(model_name="gpt-4", temperature=0.2)
+        llm = ChatOpenAI(model_name="gpt-4o", temperature=0.2)
         response = llm.predict_messages([HumanMessage(content=prompt)])
         return response.content
 
