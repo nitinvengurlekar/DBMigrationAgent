@@ -4,7 +4,6 @@ import streamlit as st
 from jinja2 import Template
 from langchain.chat_models import ChatOpenAI
 
-# --- USER INPUT SECTION ---
 st.title("Oracle Cloud DB Migration Agent")
 st.markdown("Provide inputs to generate a migration guide and SOW document.")
 
@@ -19,7 +18,6 @@ with st.form("migration_form"):
     submitted = st.form_submit_button("Generate Migration Guide and SOW")
 
 if submitted:
-    # Prepare input dict
     user_input = {
         "database_size": db_size,
         "downtime_window": downtime,
@@ -30,7 +28,6 @@ if submitted:
         "include_nonprod": nonprod == "Yes"
     }
 
-    # --- LANGCHAIN CALL TO GENERATE MIGRATION PLAN ---
     def generate_migration_guide(input_dict):
         prompt = f"""
         Create a 3-part Oracle DB migration guide:
@@ -48,7 +45,7 @@ if submitted:
 
         Each section should be thorough and professional.
         """
-        llm = ChatOpenAI(model="gpt-4", temperature=0.2)
+        llm = ChatOpenAI(model_name="gpt-4", temperature=0.2)
         response = llm.predict(prompt)
         return response
 
@@ -57,7 +54,6 @@ if submitted:
     st.subheader("Migration Guide")
     st.text_area("Generated Guide", migration_guide, height=300)
 
-    # --- SOW GENERATOR TEMPLATE ---
     sow_template = Template("""
 Schedule A: Statement of Work
 Project: Migration and Upgrade to Oracle Cloud
@@ -88,7 +84,6 @@ Migrate the on-premise Oracle DB ({{ db_size }}, version {{ current_version }}) 
 - Final project closure report
     """)
 
-    # --- Render SOW ---
     total_hours = 30 + 40 + 40 + 80 + 40 + 16 + 40 + 32
     rendered_sow = sow_template.render(
         db_size=db_size,
@@ -102,5 +97,4 @@ Migrate the on-premise Oracle DB ({{ db_size }}, version {{ current_version }}) 
     st.subheader("Statement of Work (SOW)")
     st.text_area("Generated SOW", rendered_sow, height=400)
 
-    # Optionally offer download
     st.download_button("Download SOW as Text", data=rendered_sow, file_name="oracle_migration_sow.txt")
