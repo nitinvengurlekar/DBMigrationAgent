@@ -2,7 +2,8 @@
 
 import streamlit as st
 from jinja2 import Template
-from langchain_community.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
+
 
 st.title("Oracle Cloud DB Migration Agent")
 st.markdown("Provide inputs to generate a migration guide and SOW document.")
