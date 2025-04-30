@@ -46,7 +46,7 @@ if submitted:
 
         Each section should be thorough and professional.
         """
-        llm = ChatOpenAI(model_name="gpt-4o", temperature=0.2)
+        llm = ChatOpenAI(model_name="gpt-4o", temperature=0.2, openai_api_key="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")
         response = llm.predict_messages([HumanMessage(content=prompt)])
         return response.content
 
