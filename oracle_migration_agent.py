@@ -8,7 +8,7 @@ import OS
 
 st.title("Oracle Cloud DB Migration Agent")
 st.markdown("Provide inputs to generate a migration guide and SOW document.")
-os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+os.environ["OPENAI_API_KEY"] = st.secrets["sk-proj-OXH9kjkLBiUxuk5ZmyQXylFGNZDIu5i9lfFf41x5KD5FAnHum1FB6JCxprDw3gTmbpGZHd9xjT3BlbkFJnlhBsJJ4_Yynkg6Esmd01PbPIBjq-9PDHXmwjmqV6M69NXX-aJ2lImPDi2CeIh5Oqs6rVGTIYA"]
 
 with st.form("migration_form"):
     db_size = st.text_input("Database Size", "2TB")
