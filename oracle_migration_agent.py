@@ -7,6 +7,7 @@ from langchain_core.messages import HumanMessage
 
 st.title("Oracle Cloud DB Migration Agent")
 st.markdown("Provide inputs to generate a migration guide and SOW document.")
+api_key = st.secrets["OPENAI_API_KEY"]
 
 with st.form("migration_form"):
     db_size = st.text_input("Database Size", "2TB")
