@@ -23,7 +23,7 @@ with st.form("migration_form"):
 # Initialize the LLM once, outside of function
 llm = ChatOpenAI(
     model_name="gpt-4o",
-    temperature=0.2
+    temperature=0.2, openai_api_key="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"
 )
 
 if submitted:
