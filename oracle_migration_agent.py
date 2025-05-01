@@ -18,6 +18,13 @@ with st.form("migration_form"):
     nonprod = st.selectbox("Include Non-Prod Environments?", ["Yes", "No"])
     submitted = st.form_submit_button("Generate Migration Guide and SOW")
 
+# Initialize the LLM once, outside of function
+llm = ChatOpenAI(
+    model_name="gpt-4o",
+    temperature=0.2,
+    openai_api_key="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"
+)
+
 if submitted:
     user_input = {
         "database_size": db_size,
@@ -46,9 +53,11 @@ if submitted:
 
         Each section should be thorough and professional.
         """
-        llm = ChatOpenAI(model_name="gpt-4o", temperature=0.2, openai_api_key="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")
-        response = llm.invoke([HumanMessage(content=prompt)])
-        return response.content
+        try:
+            response = llm.invoke([HumanMessage(content=prompt)])
+            return response.content
+        except Exception as e:
+            return f"Error generating migration guide: {e}"
 
     migration_guide = generate_migration_guide(user_input)
 
