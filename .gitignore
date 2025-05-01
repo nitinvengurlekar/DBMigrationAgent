@@ -14,8 +14,7 @@ venv/
 env/
 pip-log.txt
 
-# Streamlit secrets
-.streamlit/secrets.toml
+
 
 # VSCode settings (optional)
 .vscode/
