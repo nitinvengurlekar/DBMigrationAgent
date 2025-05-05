@@ -114,31 +114,34 @@ if submitted:
     oracle_guide_url = "https://www.oracle.com/database/cloud-migration/"
     oracle_guide_content = fetch_migration_guide_content(oracle_guide_url)
 
-    def generate_migration_guide(input_dict, guide_text, pdf_text=None):
-        prompt_parts = [
-            "You are an expert Oracle Cloud migration consultant.",
-            "Oracle official migration planning guide content:",
-            guide_text
-        ]
-        if pdf_text:
-            prompt_parts.extend(["Reference PDF excerpt:", pdf_text])
-        prompt_parts.append(
-            "Create a 3-part Oracle DB migration guide: 1. Planning 2. Execution 3. Post-Migration Validation."
-            f" Use inputs: DB size={input_dict['database_size']}, Downtime={input_dict['downtime_window']}"
-            f", Upgrade={input_dict['upgrade_required']}, Versions={input_dict['current_version']} to"
-            f" {input_dict['target_version']}, Platform={input_dict['target_platform']},"
-            f" Include non-prod={input_dict['include_nonprod']}. Provide a thorough, professional guide."
-        )
-        prompt = "\n\n".join(prompt_parts)
-        try:
-            response = llm.invoke([HumanMessage(content=prompt)])
-            return response.content
-        except Exception as e:
-            return f"Error generating migration guide: {e}"
+    # Generate Migration Guide
+def generate_migration_guide(input_dict, guide_text, pdf_text=None):
+    prompt_parts = [
+        "You are an expert Oracle Cloud migration consultant.",
+        "Oracle official migration planning guide content:",
+        guide_text
+    ]
+    if pdf_text:
+        prompt_parts.extend(["Reference PDF excerpt:", pdf_text])
+    prompt_parts.append(
+        "Create a 3-part Oracle DB migration guide: 1. Planning 2. Execution 3. Post-Migration Validation."
+        f" Use inputs: DB size={input_dict['database_size']}, Downtime={input_dict['downtime_window']}"
+        f", Upgrade={input_dict['upgrade_required']}, Versions={input_dict['current_version']} to"
+        f" {input_dict['target_version']}, Platform={input_dict['target_platform']},"
+        f" Include non-prod={input_dict['include_nonprod']}. Provide a thorough, professional guide."
+    )
+    prompt = "\n\n".join(prompt_parts)
+    try:
+        response = llm.invoke([HumanMessage(content=prompt)])
+        return response.content
+    except Exception as e:
+        return f"Error generating migration guide: {e}"
 
     migration_guide = generate_migration_guide(user_input, oracle_guide_content, pdf_excerpt)
     st.subheader("Migration Guide")
     st.text_area("Generated Guide", migration_guide, height=300)
+    # Download button for Migration Guide
+    st.download_button("Download Migration Guide as Text", data=migration_guide, file_name="oracle_migration_guide.txt")
 
     # Build SOW
 template_str = """
@@ -189,4 +192,5 @@ Migrate the on-premise Oracle DB ({{ db_size }}, version {{ current_version }}) 
     st.subheader("Statement of Work (SOW)")
     st.text_area("Generated SOW", rendered_sow, height=400)
 
+    # Download button for SOW
     st.download_button("Download SOW as Text", data=rendered_sow, file_name="oracle_migration_sow.txt")
