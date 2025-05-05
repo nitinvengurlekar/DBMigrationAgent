@@ -1,15 +1,49 @@
-# oracle_migration_agent.py
-
 import streamlit as st
 from jinja2 import Template
 from langchain_community.chat_models import ChatOpenAI
 from langchain_core.messages import HumanMessage
 import os
+import requests
+from bs4 import BeautifulSoup
 
 os.environ['OPENAI_API_KEY'] = st.secrets['OPENAI_API_KEY']
 
 st.title("Oracle Cloud DB Migration Agent")
-st.markdown("Provide inputs to generate a migration guide and SOW document.")
+st.markdown("Provide inputs to generate a migration guide and SOW document. This agent also references Oracle's official migration planning guide.")
+
+# Helper to fetch and summarize migration guide content from Oracle's site
+@st.cache_data(show_spinner=False)
+def fetch_migration_guide_content(base_url):
+    try:
+        guide_text = []
+        # Fetch main page
+        resp = requests.get(base_url)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, 'html.parser')
+        # Collect main page paragraphs
+        for p in soup.select('article p'):
+            guide_text.append(p.get_text(strip=True))
+        # Find and follow sublinks under the migration guide section
+        sublinks = set()
+        for a in soup.select('article a[href]'):
+            href = a['href']
+            if href.startswith('/'):
+                href = 'https://www.oracle.com' + href
+            if base_url in href or 'oracle.com/database/cloud-migration/' in href:
+                sublinks.add(href)
+        # Fetch each sublink and extract text
+        for link in sublinks:
+            try:
+                r = requests.get(link)
+                r.raise_for_status()
+                sub_soup = BeautifulSoup(r.text, 'html.parser')
+                for p in sub_soup.select('article p'):
+                    guide_text.append(p.get_text(strip=True))
+            except Exception:
+                continue
+        return '\n'.join(guide_text[:1000])  # limit to first 1000 lines for brevity
+    except Exception as e:
+        return f"Could not fetch guide content: {e}"
 
 with st.form("migration_form"):
     db_size = st.text_input("Database Size", "2TB")
@@ -21,7 +55,7 @@ with st.form("migration_form"):
     nonprod = st.selectbox("Include Non-Prod Environments?", ["Yes", "No"])
     submitted = st.form_submit_button("Generate Migration Guide and SOW")
 
-# Initialize the LLM once, outside of function
+# Initialize the LLM once
 llm = ChatOpenAI(
     model_name="gpt-4o",
     temperature=0.2
@@ -37,23 +71,31 @@ if submitted:
         "target_platform": platform,
         "include_nonprod": nonprod == "Yes"
     }
+    oracle_guide_url = "https://www.oracle.com/database/cloud-migration/"
+    oracle_guide_content = fetch_migration_guide_content(oracle_guide_url)
 
-    def generate_migration_guide(input_dict):
+    def generate_migration_guide(input_dict, guide_text):
         prompt = f"""
-        Create a 3-part Oracle DB migration guide:
+        You are an expert Oracle Cloud migration consultant.  You have access to Oracle's official migration planning guide:
+        {guide_text}
+
+        Using this as reference, create a 3-part Oracle DB migration guide:
         1. Planning
         2. Execution
         3. Post-Migration Validation
 
+        Include insights drawn from the Oracle guide content and walk through key subtopics and best practices.
+
         Use the following inputs:
         - DB size: {input_dict['database_size']}
         - Downtime: {input_dict['downtime_window']}
-        - Upgrade: {input_dict['upgrade_required']}
-        - Version: {input_dict['current_version']} to {input_dict['target_version']}
-        - Platform: {input_dict['target_platform']}
-        - Non-Prod included: {input_dict['include_nonprod']}
+        - Upgrade required: {input_dict['upgrade_required']}
+        - Current version: {input_dict['current_version']}
+        - Target version: {input_dict['target_version']}
+        - Target platform: {input_dict['target_platform']}
+        - Include non-prod: {input_dict['include_nonprod']}
 
-        Each section should be thorough and professional.
+        Provide a thorough, professional guide.
         """
         try:
             response = llm.invoke([HumanMessage(content=prompt)])
@@ -61,11 +103,12 @@ if submitted:
         except Exception as e:
             return f"Error generating migration guide: {e}"
 
-    migration_guide = generate_migration_guide(user_input)
+    migration_guide = generate_migration_guide(user_input, oracle_guide_content)
 
     st.subheader("Migration Guide")
     st.text_area("Generated Guide", migration_guide, height=300)
 
+    # Statement of Work
     sow_template = Template("""
 Schedule A: Statement of Work
 Project: Migration and Upgrade to Oracle Cloud
