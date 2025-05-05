@@ -117,7 +117,7 @@ if submitted:
     # Generate Migration Guide
 def generate_migration_guide(input_dict, guide_text, pdf_text=None):
     prompt_parts = [
-        "You are an expert Oracle Cloud migration consultant.",
+        "You are an expert Oracle Cloud migration consultant. Be diligent about producing the appropriate hours for each migration task",
         "Oracle official migration planning guide content:",
         guide_text
     ]
