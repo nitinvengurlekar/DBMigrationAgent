@@ -174,7 +174,7 @@ Migrate the on-premise Oracle DB ({{ db_size }}, version {{ current_version }}) 
 - Final project closure report
 {{ pdf_section }}
 """
-    pdf_section = ""
+pdf_section = ""
     if pdf_excerpt:
         pdf_section = "4. Reference Document Excerpt:\n" + pdf_excerpt.replace("\n", "\n> ")
 
